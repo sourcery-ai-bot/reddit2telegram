@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_names(admins):
-    admins_names = list()
+    admins_names = []
     for admin in admins:
         user = admin['user']
         if 'username' in user:

@@ -194,9 +194,7 @@ def download_file(url, filename):
 def md5_sum_from_url(url):
     try:
         r = requests.get(url, stream=True)
-    except InvalidSchema:
-        return None
-    except MissingSchema:
+    except (InvalidSchema, MissingSchema):
         return None
     chunk_counter = 0
     hash_store = hashlib.md5()
@@ -211,7 +209,7 @@ def md5_sum_from_url(url):
 
 
 def weighted_random_subreddit(weights):
-    random_value = random.uniform(0, sum(val for val in weights.values()))
+    random_value = random.uniform(0, sum(weights.values()))
     cumulative_sum = 0.0
     for k, w in weights.items():
         cumulative_sum += w
@@ -289,22 +287,14 @@ class Reddit2TelegramSender(object):
             'channel': self.t_channel.lower(),
             'url': url.lower()
         })
-        if result is None:
-            return False
-        elif result['cnt'] >= ERRORS_CNT_LIMIT:
-            return True
-        else:
-            return False
+        return result is not None and result['cnt'] >= ERRORS_CNT_LIMIT
 
     def was_before(self, url):
         result = self.urls.find_one({
             'channel': self.t_channel.lower(),
             'url': {'$regex': url.split('/')[-1]}
         })
-        if result is None:
-            return False
-        else:
-            return True
+        return result is not None
 
     def mark_as_was_before(self, url, sent=True):
         self.urls.insert_one({
@@ -352,9 +342,8 @@ class Reddit2TelegramSender(object):
         next_text = ''
         if len(text) > TELEGRAM_CAPTION_LIMIT:
             text, next_text = self._split_1024(text)
-        f = open(filename, 'rb')
-        self.telepot_bot.sendDocument(self.t_channel, f, caption=text, parse_mode=parse_mode)
-        f.close()
+        with open(filename, 'rb') as f:
+            self.telepot_bot.sendDocument(self.t_channel, f, caption=text, parse_mode=parse_mode)
         if len(next_text) > 1:
             time.sleep(2)
             self.send_text(next_text, disable_web_page_preview=True, parse_mode=parse_mode)
@@ -371,9 +360,8 @@ class Reddit2TelegramSender(object):
         next_text = ''
         if len(text) > TELEGRAM_CAPTION_LIMIT:
             text, next_text = self._split_1024(text)
-        f = open(filename, 'rb')
-        self.telepot_bot.sendVideo(self.t_channel, f, caption=text, parse_mode=parse_mode)
-        f.close()
+        with open(filename, 'rb') as f:
+            self.telepot_bot.sendVideo(self.t_channel, f, caption=text, parse_mode=parse_mode)
         if len(next_text) > 1:
             time.sleep(2)
             self.send_text(next_text, disable_web_page_preview=True, parse_mode=parse_mode)
@@ -394,9 +382,8 @@ class Reddit2TelegramSender(object):
             filename = self._get_file_name(ext)
             if not download_file(url, filename):
                 return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
-            f = open(filename, 'rb')
-            self.telepot_bot.sendPhoto(self.t_channel, f, caption=text, parse_mode=parse_mode)
-            f.close()
+            with open(filename, 'rb') as f:
+                self.telepot_bot.sendPhoto(self.t_channel, f, caption=text, parse_mode=parse_mode)
             return SupplyResult.SUCCESSFULLY
         except TelegramError as e:
             logging.info('TelegramError prevented at {tc}.'.format(tc=self.t_channel))

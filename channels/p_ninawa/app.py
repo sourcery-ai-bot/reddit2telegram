@@ -50,5 +50,3 @@ def send_post(submission, r2t):
         return r2t.send_album(url)
     elif what in ('gif', 'img'):
         return r2t.send_gif_img(what, url, ext, text)
-    else:
-        pass

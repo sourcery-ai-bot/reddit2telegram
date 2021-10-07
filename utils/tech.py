@@ -34,7 +34,7 @@ def get_all_submodules(config_filename=None):
 
 def get_all_public_channels(r2t, config_filename=None):
     all_submodules = get_all_submodules(config_filename)
-    channels_and_dates = dict()
+    channels_and_dates = {}
     for submodule_name in all_submodules:
         submodule = importlib.import_module('channels.{}.app'.format(submodule_name))
         channel_name = submodule.t_channel
@@ -50,9 +50,8 @@ def get_all_public_channels(r2t, config_filename=None):
 def generate_list_of_channels(channels_list, random_permutation=False):
     if random_permutation:
         channels_list = random.sample(channels_list, k=len(channels_list))
-    list_of_channels = ['{n}. {channel}'.format(n=str(i + 1).zfill(2), channel=channel)
+    return ['{n}. {channel}'.format(n=str(i + 1).zfill(2), channel=channel)
                         for i, channel in enumerate(channels_list)]
-    return list_of_channels
 
 
 def get_active_period(r2t, channel_name):
@@ -66,12 +65,11 @@ def get_active_period(r2t, channel_name):
 
 def get_last_members_cnt(r2t, channel_name):
     count_cursor = r2t.stats.find({'channel' : channel_name.lower()}).sort([('ts', pymongo.DESCENDING)]).limit(1)
-    last_cnt = count_cursor.next()['members_cnt']
-    return last_cnt
+    return count_cursor.next()['members_cnt']
 
 
 def get_newly_active(r2t, channels_list):
-    newly_active = list()
+    newly_active = []
     for channel in channels_list:
         days_active = get_active_period(r2t, channel)
         if days_active <= 31:
@@ -80,7 +78,7 @@ def get_newly_active(r2t, channels_list):
 
 
 def get_top_growers_for_last_week(r2t, channels_list):
-    top_growers = dict()
+    top_growers = {}
     one_week_ago = datetime.datetime.utcnow() - datetime.timedelta(days=7)
     for channel in channels_list:
         week_ago_cursor = r2t.stats.find({

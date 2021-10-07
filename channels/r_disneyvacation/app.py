@@ -14,9 +14,7 @@ def send_post(submission, r2t):
 
 	text = '{title}\n\n{link}\n{channel}'.format(
 		title=title, link=link, channel=t_channel)
-	if what == 'img':
-		if r2t.dup_check_and_mark(url) is True:
-			return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
-		return r2t.send_gif_img(what, url, ext, text)
+	if what == 'img' and r2t.dup_check_and_mark(url) is True or what != 'img':
+		return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
 	else:
-	  return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
+		return r2t.send_gif_img(what, url, ext, text)

@@ -19,9 +19,11 @@ def send_post(submission, r2t):
     link = submission.shortlink
     text = '{}\n{}'.format(title, link)
 
-    if what == 'text':
-        return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
-    elif what == 'album':
+    if (
+        what == 'text'
+        or what == 'album'
+        or what not in ('other', 'gif', 'img')
+    ):
         return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
     elif what == 'other':
         domain = urlparse(url).netloc
@@ -30,7 +32,5 @@ def send_post(submission, r2t):
             return r2t.send_text(text)
         else:
             return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
-    elif what in ('gif', 'img'):
-        return r2t.send_gif_img(what, url, ext, text)
     else:
-        return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
+        return r2t.send_gif_img(what, url, ext, text)

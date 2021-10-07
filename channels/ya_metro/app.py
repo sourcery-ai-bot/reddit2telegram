@@ -20,13 +20,12 @@ def send_post(submission, r2t):
     text = '{}\n{}'.format(title, link)
 
     if what == 'text':
-        if submission.score >= 4:
-            punchline = submission.selftext
-            text = '{title}\n\n{body}\n\n{link}'.format(
-                title=title, body=punchline, link=link)
-            return r2t.send_text(text, disable_web_page_preview=True)
-        else:
+        if submission.score < 4:
             return SupplyResult.DO_NOT_WANT_THIS_SUBMISSION
+        punchline = submission.selftext
+        text = '{title}\n\n{body}\n\n{link}'.format(
+            title=title, body=punchline, link=link)
+        return r2t.send_text(text, disable_web_page_preview=True)
     elif what == 'album':
         base_url = submission.url
         text = '{}\n{}\n\n{}'.format(title, base_url, link)
@@ -34,10 +33,7 @@ def send_post(submission, r2t):
         return r2t.send_album(url)
     elif what == 'other':
         domain = urlparse(url).netloc
-        if domain in ('www.youtube.com', 'youtu.be'):
-            text = '{}\n{}\n\n{}'.format(title, url, link)
-            return r2t.send_text(text)
-        elif submission.score >= 4:
+        if domain in ('www.youtube.com', 'youtu.be') or submission.score >= 4:
             text = '{}\n{}\n\n{}'.format(title, url, link)
             return r2t.send_text(text)
         else:
